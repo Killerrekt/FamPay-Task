@@ -6,10 +6,14 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/killerrekt/fampay-task/utils"
 )
 
 func main() {
 	app := fiber.New()
+
+	yt_client := utils.InitYTClient()
+	log.Println(yt_client)
 
 	app.Use(logger.New())
 	app.Get("/ping", func(c *fiber.Ctx) error {
