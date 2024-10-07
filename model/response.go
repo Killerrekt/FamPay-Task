@@ -1,7 +1,7 @@
 package model
 
 type Response struct {
-	Message string `json:"message"`
-	Status  bool   `json:"status"`
-	Data    string `json:"data"`
+	Message string      `json:"message"`
+	Status  bool        `json:"status"`
+	Data    interface{} `json:"data"`
 }
