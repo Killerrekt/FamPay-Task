@@ -1,11 +1,11 @@
 package utils
 
 import (
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/killerrekt/fampay-task/model"
+	"github.com/killerrekt/fampay-task/service"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -24,6 +24,9 @@ func Search(service *youtube.Service) []model.Video {
 
 	var videos []model.Video
 	for _, item := range response.Items {
+		if item.Id.VideoId == "" {
+			continue
+		}
 		temp := YtItemToVideo(item, q)
 		videos = append(videos, temp)
 	}
@@ -31,6 +34,9 @@ func Search(service *youtube.Service) []model.Video {
 }
 
 func YtItemToVideo(item *youtube.SearchResult, q string) model.Video {
+	if item == nil {
+		return model.Video{}
+	}
 	return model.Video{
 		VideoID:        item.Id.VideoId,
 		Videotitle:     item.Snippet.Title,
@@ -43,19 +49,23 @@ func YtItemToVideo(item *youtube.SearchResult, q string) model.Video {
 	}
 }
 
-func ContinuousFetch(ytClient *youtube.Service) {
-	ticker := time.NewTicker(30 * time.Second)
-	go func(ytClient *youtube.Service) {
+func ContinuousFetch(ytClient *youtube.Service, vid_service service.VideoService) {
+	ticker := time.NewTicker(10 * time.Second)
+	go func(ytClient *youtube.Service, vid_service service.VideoService) {
 		for {
 			select {
 			case <-ticker.C:
 				if State {
 					videos := Search(ytClient)
-					fmt.Println(videos)
+					log.Println("Have passed the video part")
+					err := vid_service.SaveBulkVideo(videos)
+					if err != nil {
+						log.Println("DB Error :- ", err.Error())
+					}
 				} else {
 					log.Println("The State is currently at False and the query is : ", Query)
 				}
 			}
 		}
-	}(ytClient)
+	}(ytClient, vid_service)
 }

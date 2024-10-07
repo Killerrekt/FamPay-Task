@@ -14,7 +14,7 @@ services:
       - .env
     ports:
       - 8080:8080
-    restart: on-failure:5
+    #restart: on-failure:5
     depends_on:
       - postgres
 

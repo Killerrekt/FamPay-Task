@@ -20,8 +20,9 @@ func main() {
 	db := utils.ConnectToDB()
 	utils.RunMigrations(db)
 
-	utils.ContinuousFetch(yt_client)
 	vid_service := service.NewVideoService(db)
+
+	utils.ContinuousFetch(yt_client, vid_service)
 
 	route.SetUpRoute(vid_service, app)
 

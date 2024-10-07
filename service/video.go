@@ -1,8 +1,11 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/killerrekt/fampay-task/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type VideoService interface {
@@ -20,5 +23,9 @@ func NewVideoService(DB *gorm.DB) VideoService {
 }
 
 func (v videoServices) SaveBulkVideo(videos []model.Video) error {
-	return v.DB.Create(&videos).Error
+	if len(videos) == 0 {
+		return errors.New("videos is empty")
+	}
+	err := v.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&videos).Error
+	return err
 }
