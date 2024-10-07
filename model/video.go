@@ -6,7 +6,7 @@ type Video struct {
 	VideoID        string `gorm:"primaryKey"`
 	Videotitle     string
 	Description    string
-	Publishingtime time.Time
+	Publishingtime time.Time `gorm:"type:timestamptz"`
 	Thumbnails     string
 	Query          string
 	ChannelId      string

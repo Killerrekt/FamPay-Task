@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -10,12 +11,17 @@ import (
 )
 
 var State = false
-var QueryMap = make(map[string]bool)
+var QueryMap = make(map[string]time.Time)
 
-func Search(service *youtube.Service, q string) []model.Video {
+func Search(service *youtube.Service, q string, prev time.Time) []model.Video {
 	call := service.Search.List([]string{"id", "snippet"}).
 		Q(q).
-		MaxResults(10)
+		MaxResults(50).
+		PublishedAfter(prev.Format(time.RFC3339)).
+		Order("date").
+		Type("video")
+
+	fmt.Println(call)
 
 	response, err := call.Do()
 	if err != nil {
@@ -58,6 +64,7 @@ func ContinuousFetch(ytClient *youtube.Service, vid_service service.VideoService
 	q := query
 	ticker := time.NewTicker(10 * time.Second)
 	go func(ytClient *youtube.Service, vid_service service.VideoService, q string) {
+		prev := QueryMap[q]
 		for {
 			select {
 			case <-ticker.C:
@@ -66,7 +73,8 @@ func ContinuousFetch(ytClient *youtube.Service, vid_service service.VideoService
 						log.Println("This goroutine has been stopped as query ", q, " being removed")
 						return
 					}
-					videos := Search(ytClient, q)
+					videos := Search(ytClient, q, prev)
+					prev = time.Now().UTC()
 					err := vid_service.SaveBulkVideo(videos)
 					if err != nil {
 						log.Println("DB Error :- ", err.Error())

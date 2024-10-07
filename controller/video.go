@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/killerrekt/fampay-task/model"
 	"github.com/killerrekt/fampay-task/service"
@@ -62,7 +64,7 @@ func (v videoControllers) AddQueryParameter(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "The query is already being run", Status: false})
 	}
 
-	utils.QueryMap[*req.Query] = true
+	utils.QueryMap[*req.Query] = time.Now().Add(-24 * time.Hour).UTC()
 	utils.ContinuousFetch(v.ytClient, v.service, *req.Query)
 
 	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "added to the queries", Status: true})
