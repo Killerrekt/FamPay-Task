@@ -14,7 +14,7 @@ func SetUpRoute(vid_service service.VideoService, yt_client *youtube.Service, in
 	incomingRoutes.Post("/add-query", vid_handler.AddQueryParameter)
 	incomingRoutes.Post("/remove-query", vid_handler.RemoveQueryParameter)
 
-	//incomingRoutes.Get("/get-data")
+	incomingRoutes.Get("/get-data", vid_handler.GetData)
 	incomingRoutes.Get("/settings", vid_handler.CurrentSettings)
 	incomingRoutes.Get("/query", vid_handler.GetQuery)
 }

@@ -14,6 +14,7 @@ type VideoController interface {
 	StartService(*fiber.Ctx) error
 	AddQueryParameter(*fiber.Ctx) error
 	RemoveQueryParameter(*fiber.Ctx) error
+	GetData(*fiber.Ctx) error
 	GetQuery(*fiber.Ctx) error
 	CurrentSettings(*fiber.Ctx) error
 }
@@ -108,4 +109,18 @@ func (v videoControllers) GetQuery(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "Failed to get the query in the DB", Status: false})
 	}
 	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "Got the list of queries", Status: true, Data: queries})
+}
+
+func (v videoControllers) GetData(c *fiber.Ctx) error {
+	q := c.Query("query")
+	time := c.Query("publish")
+	if q == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.Response{Message: "Didn't pass a query", Status: false})
+	}
+	data, err := v.service.GetData(q, time)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "Failed to get the query in the DB", Status: false})
+	}
+	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "Got the list of queries", Status: true, Data: data})
 }
