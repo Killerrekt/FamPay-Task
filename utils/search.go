@@ -18,6 +18,5 @@ func Search(service *youtube.Service) {
 
 	for _, item := range response.Items {
 		fmt.Println(item)
-		youtube.SearchResult
 	}
 }

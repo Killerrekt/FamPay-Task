@@ -15,6 +15,9 @@ func main() {
 	yt_client := utils.InitYTClient()
 	utils.Search(yt_client)
 
+	db := utils.ConnectToDB()
+	utils.RunMigrations(db)
+
 	app.Use(logger.New())
 	app.Get("/ping", func(c *fiber.Ctx) error {
 		return c.Status(200).JSON(fiber.Map{
