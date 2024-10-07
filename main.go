@@ -13,7 +13,7 @@ func main() {
 	app := fiber.New()
 
 	yt_client := utils.InitYTClient()
-	log.Println(yt_client)
+	utils.Search(yt_client)
 
 	app.Use(logger.New())
 	app.Get("/ping", func(c *fiber.Ctx) error {
