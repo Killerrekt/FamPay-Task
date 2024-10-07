@@ -27,21 +27,26 @@ func Search(service *youtube.Service) []model.Video {
 		if item.Id.VideoId == "" {
 			continue
 		}
-		temp := YtItemToVideo(item, q)
+		err, temp := YtItemToVideo(item, q)
+		if err != nil {
+			continue
+		}
 		videos = append(videos, temp)
 	}
 	return videos
 }
 
-func YtItemToVideo(item *youtube.SearchResult, q string) model.Video {
-	if item == nil {
-		return model.Video{}
+func YtItemToVideo(item *youtube.SearchResult, q string) (error, model.Video) {
+	timeparsed, err := time.Parse(time.RFC3339, item.Snippet.PublishedAt)
+	if err != nil {
+		return err, model.Video{}
 	}
-	return model.Video{
+
+	return nil, model.Video{
 		VideoID:        item.Id.VideoId,
 		Videotitle:     item.Snippet.Title,
 		Description:    item.Snippet.Description,
-		Publishingtime: item.Snippet.PublishedAt,
+		Publishingtime: timeparsed,
 		Thumbnails:     item.Snippet.Thumbnails.Default.Url,
 		Query:          q,
 		ChannelId:      item.Snippet.ChannelId,
