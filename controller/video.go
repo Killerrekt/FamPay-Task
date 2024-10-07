@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -67,7 +66,7 @@ func (v videoControllers) AddQueryParameter(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "The query is already being run", Status: false})
 	}
 
-	utils.QueryMap[*req.Query] = time.Now().Add(-24 * time.Hour).UTC()
+	utils.QueryMap[*req.Query] = time.Now().Add(-24 * time.Hour).UTC() //just a buffer so that there is some data in the table
 	utils.ContinuousFetch(v.ytClient, v.service, *req.Query)
 
 	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "added to the queries", Status: true})
@@ -133,12 +132,11 @@ func (v videoControllers) Recover(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "Failed to get the recovery started", Status: false})
 	}
 	for _, val := range res {
-		if _, ok := utils.QueryMap[val.Query]; ok {
+		if _, ok := utils.QueryMap[val.Query]; ok { //if already running ignore it and go to next one
 			continue
 		}
 		utils.QueryMap[val.Query] = val.PublishingTime
 		utils.ContinuousFetch(v.ytClient, v.service, val.Query)
 	}
-	fmt.Println(res)
 	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "Recovery done", Status: true})
 }
