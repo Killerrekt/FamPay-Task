@@ -10,13 +10,13 @@ import (
 )
 
 var State = false
-var Query = ""
+var QueryMap = make(map[string]bool)
 
-func Search(service *youtube.Service) []model.Video {
-	q := Query //this is done to prevent possible race condition
+func Search(service *youtube.Service, q string) []model.Video {
 	call := service.Search.List([]string{"id", "snippet"}).
 		Q(q).
 		MaxResults(10)
+
 	response, err := call.Do()
 	if err != nil {
 		log.Fatalln(err.Error())
@@ -54,23 +54,27 @@ func YtItemToVideo(item *youtube.SearchResult, q string) (error, model.Video) {
 	}
 }
 
-func ContinuousFetch(ytClient *youtube.Service, vid_service service.VideoService) {
+func ContinuousFetch(ytClient *youtube.Service, vid_service service.VideoService, query string) {
+	q := query
 	ticker := time.NewTicker(10 * time.Second)
-	go func(ytClient *youtube.Service, vid_service service.VideoService) {
+	go func(ytClient *youtube.Service, vid_service service.VideoService, q string) {
 		for {
 			select {
 			case <-ticker.C:
 				if State {
-					videos := Search(ytClient)
-					log.Println("Have passed the video part")
+					if _, ok := QueryMap[q]; !ok {
+						log.Println("This goroutine has been stopped as query ", q, " being removed")
+						return
+					}
+					videos := Search(ytClient, q)
 					err := vid_service.SaveBulkVideo(videos)
 					if err != nil {
 						log.Println("DB Error :- ", err.Error())
 					}
 				} else {
-					log.Println("The State is currently at False and the query is : ", Query)
+					log.Println("The State is currently at False and the query is : ", q)
 				}
 			}
 		}
-	}(ytClient, vid_service)
+	}(ytClient, vid_service, q)
 }

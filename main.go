@@ -15,16 +15,13 @@ func main() {
 	app := fiber.New()
 
 	yt_client := utils.InitYTClient()
-	utils.Search(yt_client)
 
 	db := utils.ConnectToDB()
 	utils.RunMigrations(db)
 
 	vid_service := service.NewVideoService(db)
 
-	utils.ContinuousFetch(yt_client, vid_service)
-
-	route.SetUpRoute(vid_service, app)
+	route.SetUpRoute(vid_service, yt_client, app)
 
 	app.Use(logger.New())
 	app.Get("/ping", func(c *fiber.Ctx) error {
