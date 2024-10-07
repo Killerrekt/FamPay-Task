@@ -13,6 +13,7 @@ type VideoService interface {
 	SaveBulkVideo([]model.Video) error
 	GetQuery() ([]string, error)
 	GetData(string, string) (model.GetVid, error)
+	RecoverInfo() ([]model.Recover, error)
 }
 
 type videoServices struct {
@@ -60,4 +61,10 @@ func (v videoServices) GetData(q string, publish string) (model.GetVid, error) {
 		res.NextPage = false
 	}
 	return res, err
+}
+
+func (v videoServices) RecoverInfo() ([]model.Recover, error) {
+	var results []model.Recover
+	err := v.DB.Model(&model.Video{}).Select("query, MAX(publishingtime) AS max_publishingtime").Group("query").Find(&results).Error
+	return results, err
 }

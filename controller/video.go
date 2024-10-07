@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,7 @@ type VideoController interface {
 	GetData(*fiber.Ctx) error
 	GetQuery(*fiber.Ctx) error
 	CurrentSettings(*fiber.Ctx) error
+	Recover(*fiber.Ctx) error
 }
 
 type videoControllers struct {
@@ -123,4 +125,20 @@ func (v videoControllers) GetData(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "Failed to get the query in the DB", Status: false})
 	}
 	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "Got the list of queries", Status: true, Data: data})
+}
+
+func (v videoControllers) Recover(c *fiber.Ctx) error {
+	res, err := v.service.RecoverInfo()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "Failed to get the recovery started", Status: false})
+	}
+	for _, val := range res {
+		if _, ok := utils.QueryMap[val.Query]; ok {
+			continue
+		}
+		utils.QueryMap[val.Query] = val.PublishingTime
+		utils.ContinuousFetch(v.ytClient, v.service, val.Query)
+	}
+	fmt.Println(res)
+	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "Recovery done", Status: true})
 }

@@ -19,6 +19,7 @@
 
 1. Can run multiple query goroutine at once server instance
 2. Nothing is hardcoded and everything is flexible
+3. Added a route, /recover, to restart the goroutine of the query in the db on server restart
 
 ### Server Build
 
