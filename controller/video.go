@@ -12,6 +12,7 @@ type VideoController interface {
 	StartService(*fiber.Ctx) error
 	AddQueryParameter(*fiber.Ctx) error
 	RemoveQueryParameter(*fiber.Ctx) error
+	GetQuery(*fiber.Ctx) error
 	CurrentSettings(*fiber.Ctx) error
 }
 
@@ -97,4 +98,12 @@ func (v videoControllers) CurrentSettings(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "Successfully got the settings", Data: Data, Status: true})
+}
+
+func (v videoControllers) GetQuery(c *fiber.Ctx) error {
+	queries, err := v.service.GetQuery()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.Response{Message: "Failed to get the query in the DB", Status: false})
+	}
+	return c.Status(fiber.StatusAccepted).JSON(model.Response{Message: "Got the list of queries", Status: true, Data: queries})
 }
