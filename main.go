@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/killerrekt/fampay-task/route"
 	"github.com/killerrekt/fampay-task/utils"
 )
 
@@ -17,6 +18,10 @@ func main() {
 
 	db := utils.ConnectToDB()
 	utils.RunMigrations(db)
+
+	utils.ContinuousFetch()
+
+	route.SetUpRoute(yt_client, db, app)
 
 	app.Use(logger.New())
 	app.Get("/ping", func(c *fiber.Ctx) error {

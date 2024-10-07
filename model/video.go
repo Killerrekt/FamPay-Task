@@ -6,4 +6,5 @@ type Video struct {
 	Description    string
 	Publishingtime string
 	Thumbnails     string
+	Query          string
 }
